@@ -1,0 +1,30 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group 'cn.apisium.shm'
+version '1.0.0'
+
+sourceCompatibility = 19
+targetCompatibility = 19
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).each {
+    it.options.compilerArgs.add('--enable-preview')
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
