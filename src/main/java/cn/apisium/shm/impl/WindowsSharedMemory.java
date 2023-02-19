@@ -51,7 +51,7 @@ public class WindowsSharedMemory implements SharedMemory {
     private final int size;
     private final String name;
     private final MemoryAddress hMapFile, pBuf;
-    private final MemorySegment segment;
+    private final ByteBuffer buffer;
 
     @SuppressWarnings("unused")
     public WindowsSharedMemory(String name, int size) throws Throwable { this(name, size, true); }
@@ -75,11 +75,11 @@ public class WindowsSharedMemory implements SharedMemory {
             closeHandle.invokeExact((Addressable) hMapFile);
             throw th;
         }
-        segment = MemorySegment.ofAddress(pBuf, size, session);
+        buffer = MemorySegment.ofAddress(pBuf, size, session).asByteBuffer();
     }
 
     @Override
-    public ByteBuffer toByteBuffer() { return segment.asByteBuffer(); }
+    public ByteBuffer toByteBuffer() { return buffer.duplicate(); }
 
     @Override
     public int size() { return size; }
