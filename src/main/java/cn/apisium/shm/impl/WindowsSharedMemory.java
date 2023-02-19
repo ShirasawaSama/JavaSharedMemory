@@ -49,6 +49,7 @@ public class WindowsSharedMemory implements SharedMemory {
     }
 
     private final int size;
+    private final String name;
     private final MemoryAddress hMapFile, pBuf;
     private final MemorySegment segment;
 
@@ -57,6 +58,7 @@ public class WindowsSharedMemory implements SharedMemory {
     public WindowsSharedMemory(String name, int size, boolean isCreate) throws Throwable {
         if (CABI.SYSTEM_TYPE != CABI.SystemType.Windows) throw new UnsupportedOperationException("Only Windows is supported");
         this.size = size;
+        this.name = name;
         hMapFile = (MemoryAddress) (isCreate ? createFileMapping.invokeExact(
                 (Addressable) MemoryAddress.ofLong(-1),
                 (Addressable) MemoryAddress.NULL,
@@ -81,6 +83,9 @@ public class WindowsSharedMemory implements SharedMemory {
 
     @Override
     public int size() { return size; }
+
+    @Override
+    public String getName() { return name; }
 
     @Override
     public void close() throws Exception {

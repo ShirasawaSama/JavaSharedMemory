@@ -10,6 +10,7 @@ namespace jshm {
 	class shared_memory {
 	public:
 		int size() { return _size; }
+		const char* name() { return _name; }
 		
 		~shared_memory() {
 #ifdef _WIN32
@@ -29,12 +30,13 @@ namespace jshm {
 		
 	private:
 		int _size;
+		const char* _name;
 		
 #ifdef _WIN32
 		HANDLE hMapFile;
 		LPTSTR pBuf;
 		
-		shared_memory(HANDLE hMapFile, LPTSTR pBuf, int size) : hMapFile(hMapFile), pBuf(pBuf), _size(size) { }
+		shared_memory(HANDLE hMapFile, LPTSTR pBuf, int size, const char* name) : hMapFile(hMapFile), pBuf(pBuf), _size(size), _name(name) { }
 #endif
 
 		static shared_memory* init(const char* name, int size, bool isCreate) {
@@ -46,7 +48,7 @@ namespace jshm {
 				CloseHandle(hMapFile);
 				throw nullptr;
 			}
-			return new shared_memory(hMapFile, pBuf, size);
+			return new shared_memory(hMapFile, pBuf, size, name);
 #endif
 		}
 	};

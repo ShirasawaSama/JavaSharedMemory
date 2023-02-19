@@ -22,6 +22,12 @@ public interface SharedMemory extends AutoCloseable {
     int size();
 
     /**
+     * Get the name of the shared memory.
+     * @return The name of the shared memory.
+     */
+    String getName();
+
+    /**
      * Open an exists shared memory.
      * @param name The name of the shared memory.
      * @param size The size of the shared memory.
