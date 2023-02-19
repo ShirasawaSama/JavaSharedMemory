@@ -53,16 +53,3 @@ namespace jshm {
 }
 
 #endif
-
-void main() {
-	auto shm = jshm::shared_memory::create("test", 1024);
-	if (shm == nullptr) {
-		printf("failed to create shared memory");
-		return;
-	}
-
-	auto buf = (char*)shm;
-	strcpy(buf, "hello world");
-
-	printf("%s", buf);
-}
