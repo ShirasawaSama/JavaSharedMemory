@@ -59,14 +59,14 @@ public class WindowsSharedMemory implements SharedMemory {
         if (CABI.SYSTEM_TYPE != CABI.SystemType.Windows) throw new UnsupportedOperationException("Only Windows is supported");
         this.size = size;
         this.name = name;
-        hMapFile = (MemoryAddress) (isCreate ? createFileMapping.invokeExact(
+        hMapFile = isCreate ? (MemoryAddress) createFileMapping.invokeExact(
                 (Addressable) MemoryAddress.ofLong(-1),
                 (Addressable) MemoryAddress.NULL,
                 0x04,
                 0,
                 size,
                 (Addressable) session.allocateUtf8String(name)
-        ) : openFileMapping.invokeExact(0x02, 0, name));
+        ) : (MemoryAddress) openFileMapping.invokeExact(0x02, 0, name);
         if (hMapFile.toRawLongValue() == 0) throw new IllegalStateException("CreateFileMapping failed");
         try {
             pBuf = (MemoryAddress) mapViewOfFile.invokeExact((Addressable) hMapFile, 0x02, 0, 0, 1024);

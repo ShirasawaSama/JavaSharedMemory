@@ -47,6 +47,14 @@ public interface SharedMemory extends AutoCloseable {
         return init(name, size, true);
     }
 
+    /**
+     * Check if the current system is supported.
+     * @return If the current system is supported.
+     */
+    static boolean isSupported() {
+        return CABI.SYSTEM_TYPE == CABI.SystemType.Windows;
+    }
+
     private static SharedMemory init(String name, int size, boolean isCreate) {
         try {
             return switch (CABI.SYSTEM_TYPE) {
