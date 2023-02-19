@@ -23,11 +23,7 @@ tasks.withType(JavaCompile).each {
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
-            groupId = 'cn.apisium.shm'
-            artifactId = 'SharedMemory'
-            version = '1.0.0'
-
+        maven(MavenPublication) {
             from components.java
         }
     }
