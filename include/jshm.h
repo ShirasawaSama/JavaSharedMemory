@@ -19,7 +19,7 @@ namespace jshm {
 #endif
 		}
 
-		operator char* () {
+		operator void* () {
 #ifdef _WIN32
 			return pBuf;
 #endif
