@@ -41,9 +41,10 @@ namespace jshm {
 
 		static shared_memory* init(const char* name, int size, bool isCreate) {
 #ifdef _WIN32
-			auto hMapFile = isCreate ? CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, size, name) : OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, name);
+			auto hMapFile = isCreate ? CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE | SEC_COMMIT, 0, size, name)
+				: OpenFileMapping(SECTION_MAP_WRITE | SECTION_MAP_READ, FALSE, name);
 			if (hMapFile == NULL) return nullptr;
-			auto pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, size);
+			auto pBuf = (LPTSTR)MapViewOfFile(hMapFile, SECTION_MAP_WRITE | SECTION_MAP_READ, 0, 0, size);
 			if (pBuf == NULL) {
 				CloseHandle(hMapFile);
 				throw nullptr;

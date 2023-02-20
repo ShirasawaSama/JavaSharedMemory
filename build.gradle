@@ -6,8 +6,8 @@ plugins {
 group 'cn.apisium.shm'
 version '1.0.0'
 
-sourceCompatibility = 19
-targetCompatibility = 19
+sourceCompatibility = JavaVersion.VERSION_19
+targetCompatibility = JavaVersion.VERSION_19
 
 repositories {
     mavenCentral()
@@ -27,4 +27,14 @@ publishing {
             from components.java
         }
     }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs(['--enable-preview', '--enable-native-access=ALL-UNNAMED'])
 }
