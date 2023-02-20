@@ -1,7 +1,10 @@
 package cn.apisium.shm;
 
 import cn.apisium.shm.impl.WindowsSharedMemory;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 
 /**
@@ -13,18 +16,31 @@ public interface SharedMemory extends AutoCloseable {
      * Get the shared memory as a {@link ByteBuffer}.
      * @return The shared memory as a {@link ByteBuffer}.
      */
+    @NotNull
+    @Contract(pure = true)
     ByteBuffer toByteBuffer();
+
+    /**
+     * Get the shared memory as a {@link MemorySegment}.
+     * @return The shared memory as a {@link MemorySegment}.
+     */
+    @NotNull
+    @Contract(pure = true)
+    MemorySegment getMemorySegment();
 
     /**
      * Get the size of the shared memory.
      * @return The size of the shared memory.
      */
+    @Contract(pure = true)
     int size();
 
     /**
      * Get the name of the shared memory.
      * @return The name of the shared memory.
      */
+    @NotNull
+    @Contract(pure = true)
     String getName();
 
     /**
@@ -33,7 +49,8 @@ public interface SharedMemory extends AutoCloseable {
      * @param size The size of the shared memory.
      * @return The shared memory.
      */
-    static SharedMemory open(String name, int size) {
+    @NotNull
+    static SharedMemory open(@NotNull String name, int size) {
         return init(name, size, false);
     }
 
@@ -43,7 +60,8 @@ public interface SharedMemory extends AutoCloseable {
      * @param size The size of the shared memory.
      * @return The shared memory.
      */
-    static SharedMemory create(String name, int size) {
+    @NotNull
+    static SharedMemory create(@NotNull String name, int size) {
         return init(name, size, true);
     }
 
@@ -51,11 +69,13 @@ public interface SharedMemory extends AutoCloseable {
      * Check if the current system is supported.
      * @return If the current system is supported.
      */
+    @Contract(pure = true)
     static boolean isSupported() {
         return CABI.SYSTEM_TYPE == CABI.SystemType.Windows;
     }
 
-    private static SharedMemory init(String name, int size, boolean isCreate) {
+    @NotNull
+    private static SharedMemory init(@NotNull String name, int size, boolean isCreate) {
         try {
             return switch (CABI.SYSTEM_TYPE) {
                 case Windows -> new WindowsSharedMemory(name, size, isCreate);

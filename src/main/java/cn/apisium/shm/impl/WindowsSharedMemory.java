@@ -2,6 +2,7 @@ package cn.apisium.shm.impl;
 
 import cn.apisium.shm.CABI;
 import cn.apisium.shm.SharedMemory;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
@@ -59,7 +60,7 @@ public class WindowsSharedMemory implements SharedMemory {
     private final int size;
     private final String name;
     private final MemoryAddress hMapFile, pBuf;
-    private final ByteBuffer buffer;
+    private final MemorySegment segment;
 
     public WindowsSharedMemory(String name, int size) throws Throwable { this(name, size, true); }
     public WindowsSharedMemory(String name, int size, boolean isCreate) throws Throwable {
@@ -82,17 +83,20 @@ public class WindowsSharedMemory implements SharedMemory {
             closeHandle.invokeExact((Addressable) hMapFile);
             throw th;
         }
-        buffer = MemorySegment.ofAddress(pBuf, size, session).asByteBuffer();
+        segment = MemorySegment.ofAddress(pBuf, size, session);
     }
 
     @Override
-    public ByteBuffer toByteBuffer() { return buffer.duplicate(); }
+    public @NotNull MemorySegment getMemorySegment() { return segment; }
+
+    @Override
+    public @NotNull ByteBuffer toByteBuffer() { return segment.asByteBuffer(); }
 
     @Override
     public int size() { return size; }
 
     @Override
-    public String getName() { return name; }
+    public @NotNull String getName() { return name; }
 
     @Override
     public void close() throws Exception {

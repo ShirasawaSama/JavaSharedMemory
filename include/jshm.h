@@ -9,8 +9,8 @@
 namespace jshm {
 	class shared_memory {
 	public:
-		int size() { return _size; }
-		const char* name() { return _name; }
+		int size() const noexcept { return _size; }
+		const char* name() const noexcept { return _name; }
 		
 		~shared_memory() {
 #ifdef _WIN32
@@ -19,7 +19,7 @@ namespace jshm {
 #endif
 		}
 
-		operator void* () {
+		void* address() const noexcept {
 #ifdef _WIN32
 			return pBuf;
 #endif

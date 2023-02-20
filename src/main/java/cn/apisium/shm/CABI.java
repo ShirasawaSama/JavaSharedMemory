@@ -1,5 +1,7 @@
 package cn.apisium.shm;
 
+import org.jetbrains.annotations.NotNull;
+
 import static java.lang.foreign.ValueLayout.ADDRESS;
 
 public class CABI {
@@ -11,6 +13,7 @@ public class CABI {
     /**
      * The current system type.
      */
+    @NotNull
     public static final SystemType SYSTEM_TYPE;
 
     static {

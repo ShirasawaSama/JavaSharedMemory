@@ -61,11 +61,10 @@ main.cpp:
 #include <jshm.h>
 
 int main() {
-    auto shm = jshm::shared_memory::create("test", 1024);
-    // auto shm = jshm::shared_memory::open("test", 1024);
-    auto buf = (char*)shm;
-    strcpy(buf, "Hello, World!");
-    delete shm;
+	auto shm = jshm::shared_memory::create("test", 1024);
+	// auto shm = jshm::shared_memory::open("test", 1024);
+	strcpy((char*)shm->address(), "Hello, World!");
+	delete shm;
 }
 ```
 
