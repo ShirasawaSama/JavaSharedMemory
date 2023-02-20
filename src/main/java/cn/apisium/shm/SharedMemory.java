@@ -19,7 +19,7 @@ public interface SharedMemory extends AutoCloseable {
      * Get the size of the shared memory.
      * @return The size of the shared memory.
      */
-    int size();
+    long size();
 
     /**
      * Get the name of the shared memory.
@@ -33,7 +33,7 @@ public interface SharedMemory extends AutoCloseable {
      * @param size The size of the shared memory.
      * @return The shared memory.
      */
-    static SharedMemory open(String name, int size) {
+    static SharedMemory open(String name, long size) {
         return init(name, size, false);
     }
 
@@ -43,7 +43,7 @@ public interface SharedMemory extends AutoCloseable {
      * @param size The size of the shared memory.
      * @return The shared memory.
      */
-    static SharedMemory create(String name, int size) {
+    static SharedMemory create(String name, long size) {
         return init(name, size, true);
     }
 
@@ -55,7 +55,7 @@ public interface SharedMemory extends AutoCloseable {
         return CABI.SYSTEM_TYPE == CABI.SystemType.Windows;
     }
 
-    private static SharedMemory init(String name, int size, boolean isCreate) {
+    private static SharedMemory init(String name, long size, boolean isCreate) {
         try {
             return switch (CABI.SYSTEM_TYPE) {
                 case Windows -> new WindowsSharedMemory(name, size, isCreate);

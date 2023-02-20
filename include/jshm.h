@@ -2,55 +2,163 @@
 #ifndef JAVA_SHARED_MEMORY_H
 #define JAVA_SHARED_MEMORY_H
 
-#ifdef _WIN32
-#include <windows.h>
+#if (defined (_WIN32)) || (defined (_WIN64))
+#define JSHM_IS_WIN
+#define WIN32_LEAN_AND_MEAN
+#elif (defined (_linux)) || (defined (_linux_)) || (defined (__linux__))
+#define JSHM_IS_LINUX
+#define JSHM_IS_NIX
+#elif (defined (_unix)) || (defined (_unix_))
+#define JSHM_IS_UNIX
+#define JSHM_IS_NIX
 #endif
 
-namespace jshm {
-	class shared_memory {
-	public:
-		int size() { return _size; }
-		const char* name() { return _name; }
-		
-		~shared_memory() {
-#ifdef _WIN32
-			UnmapViewOfFile(pBuf);
-			CloseHandle(hMapFile);
-#endif
-		}
+#include <type_traits>
+#include <string>
+#include <cstdint>
+#include <cstddef>
+#include <utility>
 
-		operator void* () {
-#ifdef _WIN32
-			return pBuf;
+#ifdef JSHM_IS_WIN
+#include <Windows.h>
 #endif
-		}
 
-		static shared_memory* create(const char* name, int size) { return init(name, size, true); }
-		static shared_memory* open(const char* name, int size) { return init(name, size, false); }
-		
+namespace jshm
+{
+	enum class SharedMemoryOpenMethod
+	{
+		Create,
+		Open
+	};
+
+	class SharedMemory
+	{
 	private:
-		int _size;
-		const char* _name;
-		
-#ifdef _WIN32
-		HANDLE hMapFile;
-		LPTSTR pBuf;
-		
-		shared_memory(HANDLE hMapFile, LPTSTR pBuf, int size, const char* name) : hMapFile(hMapFile), pBuf(pBuf), _size(size), _name(name) { }
+		using Self = SharedMemory;
+
+		std::int64_t size_;
+		std::string name_;
+		void *mem_;
+
+#ifdef JSHM_IS_WIN
+		HANDLE map_;
 #endif
 
-		static shared_memory* init(const char* name, int size, bool isCreate) {
-#ifdef _WIN32
-			auto hMapFile = isCreate ? CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE | SEC_COMMIT, 0, size, name)
-				: OpenFileMapping(SECTION_MAP_WRITE | SECTION_MAP_READ, FALSE, name);
-			if (hMapFile == NULL) return nullptr;
-			auto pBuf = (LPTSTR)MapViewOfFile(hMapFile, SECTION_MAP_WRITE | SECTION_MAP_READ, 0, 0, size);
-			if (pBuf == NULL) {
-				CloseHandle(hMapFile);
-				throw nullptr;
+		static std::pair<HANDLE,void *> Init(const char *name,std::int64_t size,bool isCreate)
+		{
+#ifdef JSHM_IS_WIN
+			LARGE_INTEGER li;
+			li.QuadPart = size;
+			HANDLE mapFile = nullptr;
+			if(isCreate)
+			{
+				mapFile = ::CreateFileMappingA(INVALID_HANDLE_VALUE,nullptr,PAGE_READWRITE|SEC_COMMIT,li.HighPart,li.LowPart,name);
 			}
-			return new shared_memory(hMapFile, pBuf, size, name);
+			else
+			{
+				mapFile = ::OpenFileMappingA(SECTION_MAP_WRITE|SECTION_MAP_READ,FALSE,name);
+			}
+			if(!mapFile)
+			{
+				return {nullptr,nullptr};
+			}
+			void *p = ::MapViewOfFile(mapFile,SECTION_MAP_WRITE | SECTION_MAP_READ,0,0,static_cast<std::size_t>(size));
+			if(!p)
+			{
+				::CloseHandle(mapFile);
+				return {nullptr,nullptr};
+			}
+			return {mapFile,p};
 #endif
+		}
+	public:
+
+		inline std::int64_t GetSize() const noexcept
+		{
+			return this->size_;
+		}
+
+		inline const std::string &Name() const noexcept
+		{
+			return this->name_;
+		}
+
+		SharedMemory(std::string name,std::int64_t size,SharedMemoryOpenMethod method)
+			:size_(size)
+			,name_(std::move(name))
+			,mem_(nullptr)
+#ifdef JSHM_IS_WIN
+			,map_(nullptr)
+#endif
+		{
+			auto pair = this->Init(this->name_.c_str(),size,method == SharedMemoryOpenMethod::Create);
+			if(!pair.second)
+			{
+				this->size_ = 0;
+			}
+			this->mem_ = pair.second;
+			this->map_ = pair.first;
+		}
+
+		SharedMemory(const Self &other) = delete;
+
+		SharedMemory(Self &&other) noexcept
+			:size_(other.size_)
+			,name_(std::move(other.name_))
+			,mem_(other.mem_)
+#ifdef JSHM_IS_WIN
+			,map_(other.map_)
+#endif
+		{
+			other.size_ = 0;
+			other.mem_ = nullptr;
+			other.map_ = nullptr;
+		}
+
+		inline Self &operator=(Self &&other) noexcept
+		{
+			if(this != std::addressof(other))
+			{
+#ifdef JSHM_IS_WIN
+				if(this->mem_)
+				{
+					::UnmapViewOfFile(this->mem_);
+					::CloseHandle(this->map_);
+				}
+				this->size_ = other.size_;
+				this->name_ = std::move(other.name_);
+				this->mem_ = other.mem_;
+				this->map_ = other.map_;
+				other.size_ = 0;
+				other.mem_ = nullptr;
+				other.map_ = nullptr;
+#endif
+			}
+			return *this;
+		}
+
+		Self &operator=(const Self &other) = delete;
+
+		~SharedMemory() noexcept
+		{
+#ifdef JSHM_IS_WIN
+			if(this->mem_)
+			{
+				::UnmapViewOfFile(this->mem_);
+				::CloseHandle(this->map_);
+			}
+#endif
+		}
+
+		operator void *() const noexcept
+		{
+			return this->mem_;
+		}
+
+		template<typename _T,typename _Check = decltype(reinterpret_cast<_T>(std::declval<void*>()))>
+		inline _T AsPtr() const noexcept
+		{
+			return reinterpret_cast<_T>(this->mem_);
 		}
 	};
 }
