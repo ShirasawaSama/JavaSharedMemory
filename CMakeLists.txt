@@ -4,20 +4,7 @@ project(java_shared_memory)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_library(${PROJECT_NAME} INTERFACE include/jshm.h)
+include_directories("${PROJECT_SOURCE_DIR}/include")
 
-target_include_directories(${PROJECT_NAME} INTERFACE include)
-
-set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-
-install(
-  TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-)
-
-install(
-  DIRECTORY "include/"
-  DESTINATION "include"
-)
+# Shared Memory Test
+add_executable(SmTest "${PROJECT_SOURCE_DIR}/test/main.cpp")

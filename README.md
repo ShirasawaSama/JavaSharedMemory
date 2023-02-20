@@ -44,28 +44,16 @@ public class Main {
 
 ### C++
 
-```bash
-git submodule add https://github.com/ShirasawaSama/JavaSharedMemory.git
-```
-
-CMakeLists.txt:
-
-```CMakeLists.txt
-add_subdirectory(JavaSharedMemory)
-target_link_libraries(${PROJECT_NAME} java_shared_memory)
-```
-
-main.cpp:
+Just include `jshm.h`.
 
 ```cpp
 #include <jshm.h>
 
 int main() {
-    auto shm = jshm::shared_memory::create("test", 1024);
-    // auto shm = jshm::shared_memory::open("test", 1024);
-    auto buf = (char*)shm;
+    jshm::SharedMemory shm{"Hello",4096,jshm::SharedMemoryOpenMethod::Create};
+    // jshm::SharedMemory shm{"Hello",4096,jshm::SharedMemoryOpenMethod::Open};
+    char *buf{shm.GetPtr<char*>()};
     strcpy(buf, "Hello, World!");
-    delete shm;
 }
 ```
 
