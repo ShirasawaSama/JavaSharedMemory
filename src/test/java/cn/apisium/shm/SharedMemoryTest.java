@@ -26,10 +26,10 @@ public class SharedMemoryTest {
     @Test
     public void testFull() {
         var buf = shm.toByteBuffer();
-        var array = new byte[shm.size()];
-        for (int i = 0; i < shm.size(); i++) array[i] = (byte)i;
+        var array = new byte[shm.getSize()];
+        for (int i = 0; i < shm.getSize(); i++) array[i] = (byte)i;
         buf.put(array);
-        var array2 = new byte[shm.size()];
+        var array2 = new byte[shm.getSize()];
         buf.rewind();
         buf.get(array2);
         Assertions.assertArrayEquals(array, array2);

@@ -93,7 +93,7 @@ public class WindowsSharedMemory implements SharedMemory {
     public @NotNull ByteBuffer toByteBuffer() { return segment.asByteBuffer(); }
 
     @Override
-    public int size() { return size; }
+    public int getSize() { return size; }
 
     @Override
     public @NotNull String getName() { return name; }

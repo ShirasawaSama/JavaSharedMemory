@@ -33,7 +33,7 @@ public interface SharedMemory extends AutoCloseable {
      * @return The size of the shared memory.
      */
     @Contract(pure = true)
-    int size();
+    int getSize();
 
     /**
      * Get the name of the shared memory.

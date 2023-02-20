@@ -61,10 +61,10 @@ main.cpp:
 #include <jshm.h>
 
 int main() {
-	auto shm = jshm::shared_memory::create("test", 1024);
-	// auto shm = jshm::shared_memory::open("test", 1024);
-	strcpy((char*)shm->address(), "Hello, World!");
-	delete shm;
+    auto shm = jshm::shared_memory::create("test", 1024);
+    // auto shm = jshm::shared_memory::open("test", 1024);
+    strcpy((char*)shm->address(), "Hello, World!");
+    delete shm;[.gitmodules](..%2F..%2FCpp%2FEIMPluginScanner%2F.gitmodules)
 }
 ```
 
