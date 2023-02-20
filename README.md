@@ -50,7 +50,7 @@ Just include `jshm.h`.
 #include <jshm.h>
 
 int main() {
-    jshm::SharedMemory shm{"Hello",4096,jshm::SharedMemoryOpenMethod::Create};
+    jshm::SharedMemory shm{"test",4096,jshm::SharedMemoryOpenMethod::Create};
     // jshm::SharedMemory shm{"Hello",4096,jshm::SharedMemoryOpenMethod::Open};
     char *buf{shm.GetPtr<char*>()};
     strcpy(buf, "Hello, World!");
