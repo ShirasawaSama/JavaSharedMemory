@@ -21,3 +21,5 @@ install(
   DIRECTORY "include/"
   DESTINATION "include"
 )
+
+add_executable(jshm_test "${PROJECT_SOURCE_DIR}/test/main.cpp")
