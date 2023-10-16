@@ -1,12 +1,11 @@
 # JavaSharedMemory [![Jitpack](https://www.jitpack.io/v/ShirasawaSama/JavaSharedMemory.svg)](https://www.jitpack.io/#ShirasawaSama/JavaSharedMemory)
 
-Shared memory between processes. (Java, C++, Rust, etc) Based on Java 19 [Foreign Function & Memory API](https://openjdk.org/jeps/434)
+Shared memory between processes. (Java, C++, Rust, etc.) Based on Java 19 [Foreign Function & Memory API](https://openjdk.org/jeps/434)
+
+Support Windows *(CreateFileMapping)*, Linux and macOS *(mmap and shmget)*.
 
 > **Note**
 > Compared with standard input and output (anonymous pipes) on Windows, more than 2x performance improvement.
-
-> **Warning**
-> Currently only Windows is supported. Support for other platforms will be added later.
 
 ## Usage
 
