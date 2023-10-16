@@ -1,6 +1,6 @@
 package cn.apisium.shm;
 
-import cn.apisium.shm.impl.WindowsSharedMemory;
+import cn.apisium.shm.impl.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +56,7 @@ public interface SharedMemory extends AutoCloseable {
 
     /**
      * Create a new shared memory.
-     * @param name The name of the shared memory.
+     * @param name The identifier of the shared memory.
      * @param size The size of the shared memory.
      * @return The shared memory.
      */
@@ -71,16 +71,15 @@ public interface SharedMemory extends AutoCloseable {
      */
     @Contract(pure = true)
     static boolean isSupported() {
-        return CABI.SYSTEM_TYPE == CABI.SystemType.Windows;
+        return CABI.SYSTEM_TYPE == CABI.SystemType.Windows || CABI.SYSTEM_TYPE == CABI.SystemType.Unix;
     }
 
     @NotNull
-    private static SharedMemory init(@NotNull String name, int size, boolean isCreate) {
+    private static SharedMemory init(@NotNull String identifier, int size, boolean isCreate) {
         try {
             return switch (CABI.SYSTEM_TYPE) {
-                case Windows -> new WindowsSharedMemory(name, size, isCreate);
-                case Linux -> throw new UnsupportedOperationException("Linux is not supported yet");
-                case MacOS -> throw new UnsupportedOperationException("MacOS is not supported yet");
+                case Windows -> new WindowsSharedMemory(identifier, size, isCreate);
+                case Unix -> new MmapSharedMemory(identifier, size, isCreate);
                 default -> throw new UnsupportedOperationException("Only Windows, Linux and MacOS are supported");
             };
         } catch (Throwable th) {

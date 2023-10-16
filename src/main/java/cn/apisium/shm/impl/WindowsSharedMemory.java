@@ -1,23 +1,23 @@
 package cn.apisium.shm.impl;
 
+import cn.apisium.shm.AbstractSharedMemory;
 import cn.apisium.shm.CABI;
-import cn.apisium.shm.SharedMemory;
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
-import java.nio.ByteBuffer;
 
-@SuppressWarnings("unused")
-public class WindowsSharedMemory implements SharedMemory {
+public final class WindowsSharedMemory extends AbstractSharedMemory {
     private static MemorySession session;
     private static MethodHandle createFileMapping, openFileMapping, closeHandle, mapViewOfFile, unmapViewOfFile;
+    @SuppressWarnings("unused")
     private static final int SECTION_QUERY = 0x0001, SECTION_MAP_WRITE = 0x0002, SECTION_MAP_READ = 0x0004,
             SECTION_MAP_EXECUTE = 0x0008, SECTION_EXTEND_SIZE = 0x0010, SECTION_MAP_EXECUTE_EXPLICIT = 0x0020,
             SECTION_ALL_ACCESS = SECTION_QUERY | SECTION_MAP_WRITE | SECTION_MAP_READ | SECTION_MAP_EXECUTE | SECTION_EXTEND_SIZE | SECTION_MAP_EXECUTE_EXPLICIT;
+    @SuppressWarnings("unused")
     private static final int PAGE_NOACCESS = 0x01, PAGE_READONLY = 0x02, PAGE_READWRITE = 0x04, PAGE_WRITECOPY = 0x08,
             PAGE_EXECUTE = 0x10, PAGE_EXECUTE_READ = 0x20, PAGE_EXECUTE_READWRITE = 0x40, PAGE_EXECUTE_WRITECOPY = 0x80,
             PAGE_GUARD = 0x100, PAGE_NOCACHE = 0x200, PAGE_WRITECOMBINE = 0x400;
+    @SuppressWarnings("unused")
     private static final int SEC_COMMIT = 0x08000000, SEC_LARGE_PAGES = 0x80000000, FILE_MAP_LARGE_PAGES = 0x20000000;
 
     static {
@@ -56,17 +56,11 @@ public class WindowsSharedMemory implements SharedMemory {
             ));
         }
     }
-
-    private final int size;
-    private final String name;
     private final MemoryAddress hMapFile, pBuf;
-    private final MemorySegment segment;
 
-    public WindowsSharedMemory(String name, int size) throws Throwable { this(name, size, true); }
     public WindowsSharedMemory(String name, int size, boolean isCreate) throws Throwable {
+        super(name, size, isCreate);
         if (CABI.SYSTEM_TYPE != CABI.SystemType.Windows) throw new UnsupportedOperationException("Only Windows is supported");
-        this.size = size;
-        this.name = name;
         hMapFile = isCreate ? (MemoryAddress) createFileMapping.invokeExact(
                 (Addressable) MemoryAddress.ofLong(-1),
                 (Addressable) MemoryAddress.NULL,
@@ -85,18 +79,6 @@ public class WindowsSharedMemory implements SharedMemory {
         }
         segment = MemorySegment.ofAddress(pBuf, size, session);
     }
-
-    @Override
-    public @NotNull MemorySegment getMemorySegment() { return segment; }
-
-    @Override
-    public @NotNull ByteBuffer toByteBuffer() { return segment.asByteBuffer(); }
-
-    @Override
-    public int getSize() { return size; }
-
-    @Override
-    public @NotNull String getName() { return name; }
 
     @Override
     public void close() throws Exception {

@@ -4,11 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import static java.lang.foreign.ValueLayout.ADDRESS;
 
-public class CABI {
+public final class CABI {
     /**
      * System types.
      */
-    public enum SystemType { Unknown, Windows, Linux, MacOS }
+    public enum SystemType { Unknown, Windows, Unix }
 
     /**
      * The current system type.
@@ -23,7 +23,7 @@ public class CABI {
         if ((ARCH.equals("amd64") || ARCH.equals("x86_64")) && ADDRESS_SIZE == 64) {
             SYSTEM_TYPE = OS.startsWith("Windows") ? SystemType.Windows : SystemType.Unknown;
         } else if (ARCH.equals("aarch64")) {
-            SYSTEM_TYPE = OS.startsWith("Mac") ? SystemType.MacOS : SystemType.Linux;
+            SYSTEM_TYPE = SystemType.Unix;
         } else SYSTEM_TYPE = SystemType.Unknown;
     }
 }

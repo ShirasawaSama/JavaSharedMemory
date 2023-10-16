@@ -9,7 +9,7 @@ public class SharedMemoryTest {
     private static SharedMemory shm;
     @BeforeAll
     public static void init() {
-        shm = SharedMemory.create("jshm-test", 8192);
+        shm = SharedMemory.create("/srgg", 8192);
     }
 
     @Test
