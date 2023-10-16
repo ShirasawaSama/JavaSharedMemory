@@ -5,6 +5,7 @@ cbuild
 !**/src/main/**/build/
 !**/src/test/**/build/
 *.log
+cmake-build-debug
 
 ### IntelliJ IDEA ###
 .idea

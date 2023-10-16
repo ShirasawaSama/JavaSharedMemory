@@ -1,10 +1,15 @@
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
+
+#ifdef _WIN32
 #include <fcntl.h>
 #include <io.h>
+#endif
 #include "../include/jshm.h"
 
 int main(int argc, char** argv) {
-	auto fromStdIn = false;
+#ifdef _WIN32
+    auto fromStdIn = false;
 	for (int i = 0; i < argc; i++) if (strcmp(argv[i], "STDIN") == 0) fromStdIn = true;
 	if (fromStdIn) {
 		freopen(nullptr, "rb", stdin);
@@ -17,8 +22,9 @@ int main(int argc, char** argv) {
 		while (fread(buf, 1, 1024, stdin) > 0);
 		return 0;
 	}
+#endif
 	
-	auto shm = jshm::shared_memory::create("JSHM_TEST", 1024);
+	auto shm = jshm::shared_memory::create("/JSHM_TEST", 1024);
 	char buf[1024];
 	strcpy((char*)shm->address(), "Hello World!");
 	strcpy(buf, (char*)shm->address());
