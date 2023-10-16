@@ -40,7 +40,7 @@ namespace jshm {
 		HANDLE hMapFile;
 		LPTSTR _pBuf;
 
-		shared_memory(HANDLE hMapFile, LPTSTR pBuf, int size, const char* name) : hMapFile(hMapFile), pBuf(pBuf), _size(size), _name(name) { }
+		shared_memory(HANDLE hMapFile, LPTSTR pBuf, int size, const char* name) : hMapFile(hMapFile), _pBuf(pBuf), _size(size), _name(name) { }
 #elif __linux__ || __APPLE__
         void* _pBuf = nullptr;
         bool _isCreate;
