@@ -9,9 +9,10 @@ import java.lang.invoke.MethodHandle;
 public final class MmapSharedMemory extends AbstractSharedMemory {
     private static MemorySession session;
     private static MethodHandle shm_open, ftruncate, mmap, munmap, shm_unlink;
+    private static final int O_CREAT = 0x00000200, O_EXCL = 0x00000800, O_RDWR = 0x0002,
+            PROT_READ = 0x01, PROT_WRITE = 0x02, MAP_SHARED = 0x01;
     @SuppressWarnings("OctalInteger")
-    private static final int O_CREAT = 0x00000200, O_RDWR = 0x0002, S_IRUSR = 0000400, S_IWUSR = 0000200,
-                            PROT_READ = 0x01, PROT_WRITE = 0x02, MAP_SHARED = 0x01;
+    private static final short S_IRUSR = 00400, S_IWUSR = 00200;
 
     static {
         if (CABI.SYSTEM_TYPE == CABI.SystemType.Unix) {
@@ -21,9 +22,8 @@ public final class MmapSharedMemory extends AbstractSharedMemory {
             shm_open = linker.downcallHandle(lookup.lookup("shm_open").orElseThrow(), FunctionDescriptor.of(
                     ValueLayout.JAVA_INT,
                     ValueLayout.ADDRESS,
-                    ValueLayout.JAVA_INT,
                     ValueLayout.JAVA_INT
-            ));
+            ).asVariadic(ValueLayout.JAVA_SHORT));
             ftruncate = linker.downcallHandle(lookup.lookup("ftruncate").orElseThrow(), FunctionDescriptor.of(
                     ValueLayout.JAVA_INT,
                     ValueLayout.JAVA_INT,
@@ -54,8 +54,8 @@ public final class MmapSharedMemory extends AbstractSharedMemory {
         super(name, size, isCreate);
         if (CABI.SYSTEM_TYPE != CABI.SystemType.Unix) throw new UnsupportedOperationException("Only Unix is supported");
         int mode = O_RDWR;
-        if (isCreate) mode |= O_CREAT;
-        int fd = (int) shm_open.invokeExact((Addressable) session.allocateUtf8String(name), mode, S_IRUSR | S_IWUSR);
+        if (isCreate) mode |= O_CREAT | O_EXCL;
+        int fd = (int) shm_open.invokeExact((Addressable) session.allocateUtf8String(name), mode, (short) (S_IRUSR | S_IWUSR));
         if (fd == -1) throw new IllegalStateException("shm_open failed.");
         try {
             if (isCreate && (int) ftruncate.invokeExact(fd, size) == -1) throw new IllegalStateException("ftruncate failed.");

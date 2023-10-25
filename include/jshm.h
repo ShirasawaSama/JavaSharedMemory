@@ -59,7 +59,9 @@ namespace jshm {
 			}
 			return new shared_memory(hMapFile, pBuf, size, name);
 #elif __linux__ || __APPLE__
-            auto fd = isCreate ? shm_open(name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR) : shm_open(name, O_RDWR, S_IRUSR | S_IWUSR);
+            auto mode = O_RDWR;
+            if (isCreate) mode |= O_CREAT | O_EXCL;
+            auto fd = shm_open(name, mode, S_IRUSR | S_IWUSR);
             if (fd == -1) return nullptr;
             if (isCreate && ftruncate(fd, size) == -1) {
                 close(fd);
