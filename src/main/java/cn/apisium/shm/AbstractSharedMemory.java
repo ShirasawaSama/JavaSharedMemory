@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
 public abstract class AbstractSharedMemory implements SharedMemory {
@@ -24,7 +25,7 @@ public abstract class AbstractSharedMemory implements SharedMemory {
     public @NotNull MemorySegment getMemorySegment() { return segment; }
 
     @Override
-    public @NotNull ByteBuffer toByteBuffer() { return segment.asByteBuffer(); }
+    public @NotNull ByteBuffer toByteBuffer() { return segment.asByteBuffer().order(ByteOrder.nativeOrder()); }
 
     @Override
     public int getSize() { return size; }
