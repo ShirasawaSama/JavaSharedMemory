@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'cn.apisium.shm'
-version '0.1.5'
+version = System.getenv('VERSION') ?: '0.0.0'
 
 sourceCompatibility = JavaVersion.VERSION_19
 targetCompatibility = JavaVersion.VERSION_19

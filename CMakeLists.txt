@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
+option(BUILD_TESTS "Build tests" OFF)
+
 project(java_shared_memory)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -22,4 +24,6 @@ install(
   DESTINATION "include"
 )
 
-add_executable(jshm_test "${PROJECT_SOURCE_DIR}/test/main.cpp")
+if(BUILD_TESTS)
+    add_executable(jshm_test "${PROJECT_SOURCE_DIR}/test/main.cpp")
+endif()
