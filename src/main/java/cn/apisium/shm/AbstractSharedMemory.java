@@ -2,12 +2,14 @@ package cn.apisium.shm;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 @SuppressWarnings("unused")
 public abstract class AbstractSharedMemory implements SharedMemory {
+    private final Arena arena = Arena.ofShared();
     private final int size;
     private final String name;
     protected final boolean isCreate;

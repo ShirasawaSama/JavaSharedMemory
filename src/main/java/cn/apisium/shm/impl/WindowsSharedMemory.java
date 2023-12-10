@@ -7,7 +7,6 @@ import java.lang.foreign.*;
 import java.lang.invoke.MethodHandle;
 
 public final class WindowsSharedMemory extends AbstractSharedMemory {
-    private static MemorySession session;
     private static MethodHandle createFileMapping, openFileMapping, closeHandle, mapViewOfFile, unmapViewOfFile;
     @SuppressWarnings("unused")
     private static final int SECTION_QUERY = 0x0001, SECTION_MAP_WRITE = 0x0002, SECTION_MAP_READ = 0x0004,
@@ -23,9 +22,8 @@ public final class WindowsSharedMemory extends AbstractSharedMemory {
     static {
         if (CABI.SYSTEM_TYPE == CABI.SystemType.Windows) {
             var linker = Linker.nativeLinker();
-            session = MemorySession.openImplicit();
-            var kernel = SymbolLookup.libraryLookup("kernel32.dll", session);
-            createFileMapping = linker.downcallHandle(kernel.lookup("CreateFileMappingA").orElseThrow(), FunctionDescriptor.of(
+            var kernel = SymbolLookup.libraryLookup("kernel32.dll", Arena.global());
+            createFileMapping = linker.downcallHandle(kernel.find("CreateFileMappingA").orElseThrow(), FunctionDescriptor.of(
                     ValueLayout.ADDRESS,
                     ValueLayout.ADDRESS,
                     ValueLayout.ADDRESS,
@@ -34,16 +32,16 @@ public final class WindowsSharedMemory extends AbstractSharedMemory {
                     ValueLayout.JAVA_INT,
                     ValueLayout.ADDRESS
             ));
-            openFileMapping = linker.downcallHandle(kernel.lookup("OpenFileMappingA").orElseThrow(), FunctionDescriptor.of(
+            openFileMapping = linker.downcallHandle(kernel.find("OpenFileMappingA").orElseThrow(), FunctionDescriptor.of(
                     ValueLayout.ADDRESS,
                     ValueLayout.JAVA_INT,
                     ValueLayout.JAVA_INT,
                     ValueLayout.ADDRESS
             ));
-            closeHandle = linker.downcallHandle(kernel.lookup("CloseHandle").orElseThrow(), FunctionDescriptor.ofVoid(
+            closeHandle = linker.downcallHandle(kernel.find("CloseHandle").orElseThrow(), FunctionDescriptor.ofVoid(
                     ValueLayout.ADDRESS
             ));
-            mapViewOfFile = linker.downcallHandle(kernel.lookup("MapViewOfFile").orElseThrow(), FunctionDescriptor.of(
+            mapViewOfFile = linker.downcallHandle(kernel.find("MapViewOfFile").orElseThrow(), FunctionDescriptor.of(
                     ValueLayout.ADDRESS,
                     ValueLayout.ADDRESS,
                     ValueLayout.JAVA_INT,
@@ -51,40 +49,40 @@ public final class WindowsSharedMemory extends AbstractSharedMemory {
                     ValueLayout.JAVA_INT,
                     ValueLayout.JAVA_INT
             ));
-            unmapViewOfFile = linker.downcallHandle(kernel.lookup("UnmapViewOfFile").orElseThrow(), FunctionDescriptor.ofVoid(
+            unmapViewOfFile = linker.downcallHandle(kernel.find("UnmapViewOfFile").orElseThrow(), FunctionDescriptor.ofVoid(
                     ValueLayout.ADDRESS
             ));
         }
     }
-    private final MemoryAddress hMapFile, pBuf;
+    private final MemorySegment hMapFile;
 
     public WindowsSharedMemory(String name, int size, boolean isCreate) throws Throwable {
         super(name, size, isCreate);
         if (CABI.SYSTEM_TYPE != CABI.SystemType.Windows) throw new UnsupportedOperationException("Only Windows is supported");
-        hMapFile = isCreate ? (MemoryAddress) createFileMapping.invokeExact(
-                (Addressable) MemoryAddress.ofLong(-1),
-                (Addressable) MemoryAddress.NULL,
+        hMapFile = isCreate ? (MemorySegment) createFileMapping.invokeExact(
+                (MemorySegment) MemorySegment.ofAddress(-1),
+                MemorySegment.NULL,
                 PAGE_READWRITE | SEC_COMMIT,
                 0,
                 size,
-                (Addressable) session.allocateUtf8String(name)
-        ) : (MemoryAddress) openFileMapping.invokeExact(SECTION_MAP_WRITE | SECTION_MAP_READ, 0, name);
-        if (hMapFile.toRawLongValue() == 0) throw new IllegalStateException("CreateFileMapping failed.");
+                (MemorySegment) Arena.ofAuto().allocateUtf8String(name)
+        ) : (MemorySegment) openFileMapping.invokeExact(SECTION_MAP_WRITE | SECTION_MAP_READ, 0, name);
+        if (hMapFile.address() == 0) throw new IllegalStateException("CreateFileMapping failed.");
         try {
-            pBuf = (MemoryAddress) mapViewOfFile.invokeExact((Addressable) hMapFile, SECTION_MAP_WRITE | SECTION_MAP_READ, 0, 0, size);
-            if (pBuf.toRawLongValue() == 0) throw new IllegalStateException("MapViewOfFile failed.");
+            segment = (MemorySegment) mapViewOfFile.invokeExact(hMapFile, SECTION_MAP_WRITE | SECTION_MAP_READ, 0, 0, size);
+            if (segment.address() == 0) throw new IllegalStateException("MapViewOfFile failed.");
         } catch (Throwable th) {
-            closeHandle.invokeExact((Addressable) hMapFile);
+            closeHandle.invokeExact(hMapFile);
             throw th;
         }
-        segment = MemorySegment.ofAddress(pBuf, size, session);
+        segment = segment.reinterpret(size);
     }
 
     @Override
     public void close() throws Exception {
         try {
-            unmapViewOfFile.invokeExact((Addressable) pBuf);
-            closeHandle.invokeExact((Addressable) hMapFile);
+            if (segment != null) unmapViewOfFile.invokeExact(segment);
+            if (hMapFile != null) closeHandle.invokeExact(hMapFile);
         } catch (Throwable throwable) {
             throw new Exception(throwable);
         }

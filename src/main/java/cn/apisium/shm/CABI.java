@@ -19,7 +19,7 @@ public final class CABI {
     static {
         var OS = System.getProperty("os.name");
         var ARCH = System.getProperty("os.arch");
-        var ADDRESS_SIZE = ADDRESS.bitSize();
+        var ADDRESS_SIZE = ADDRESS.byteSize();
         if ((ARCH.equals("amd64") || ARCH.equals("x86_64")) && ADDRESS_SIZE == 64) {
             SYSTEM_TYPE = OS.startsWith("Windows") ? SystemType.Windows : SystemType.Unknown;
         } else if (ARCH.equals("aarch64")) {
