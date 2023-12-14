@@ -2,13 +2,11 @@ package cn.apisium.shm;
 
 import org.jetbrains.annotations.NotNull;
 
-import static java.lang.foreign.ValueLayout.ADDRESS;
-
 public final class CABI {
     /**
      * System types.
      */
-    public enum SystemType { Unknown, Windows, Unix }
+    public enum SystemType { @SuppressWarnings("unused") Unknown, Windows, Unix }
 
     /**
      * The current system type.
@@ -18,12 +16,7 @@ public final class CABI {
 
     static {
         var OS = System.getProperty("os.name");
-        var ARCH = System.getProperty("os.arch");
-        var ADDRESS_SIZE = ADDRESS.byteSize();
-        if ((ARCH.equals("amd64") || ARCH.equals("x86_64")) && ADDRESS_SIZE == 64) {
-            SYSTEM_TYPE = OS.startsWith("Windows") ? SystemType.Windows : SystemType.Unknown;
-        } else if (ARCH.equals("aarch64")) {
-            SYSTEM_TYPE = SystemType.Unix;
-        } else SYSTEM_TYPE = SystemType.Unknown;
+        if (OS.startsWith("Windows")) SYSTEM_TYPE = SystemType.Windows;
+        else SYSTEM_TYPE = SystemType.Unix;
     }
 }
