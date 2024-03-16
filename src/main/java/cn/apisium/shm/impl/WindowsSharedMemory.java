@@ -66,7 +66,7 @@ public final class WindowsSharedMemory extends AbstractSharedMemory {
                 0,
                 size,
                 (MemorySegment) Arena.ofAuto().allocateUtf8String(name)
-        ) : (MemorySegment) openFileMapping.invokeExact(SECTION_MAP_WRITE | SECTION_MAP_READ, 0, name);
+        ) : (MemorySegment) openFileMapping.invokeExact(SECTION_MAP_WRITE | SECTION_MAP_READ, 0, (MemorySegment) Arena.ofAuto().allocateUtf8String(name));
         if (hMapFile.address() == 0) throw new IllegalStateException("CreateFileMapping failed.");
         try {
             segment = (MemorySegment) mapViewOfFile.invokeExact(hMapFile, SECTION_MAP_WRITE | SECTION_MAP_READ, 0, 0, size);
